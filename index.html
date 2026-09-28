@@ -3,32 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dead Baron</title>
-<meta name="description" content="Games by Dead Baron.">
-<style>
-  :root { --bg: #05020f; --ink: #eaf6ff; --dim: #9a8fd6; --pink: #FF3D91; --cyan: #1DE9FF; }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-  body { display: grid; place-items: center; padding: 24px 16px;
-    background-image: linear-gradient(rgba(114,91,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(114,91,255,.08) 1px, transparent 1px);
-    background-size: 48px 48px; }
-  main { text-align: center; max-width: 420px; width: 100%; }
-  h1 { margin: 0 0 6px; font-size: clamp(34px, 10vw, 56px); letter-spacing: 6px;
-    text-shadow: 0 0 10px var(--pink), 0 0 28px var(--pink); }
-  p { margin: 0 0 36px; color: var(--dim); letter-spacing: 4px; font-size: 13px; }
-  a.game { display: block; padding: 18px; border: 2px solid var(--cyan); border-radius: 10px; color: var(--cyan);
-    text-decoration: none; letter-spacing: 4px; font-weight: 700; font-size: 18px;
-    box-shadow: 0 0 12px rgba(29,233,255,.5), inset 0 0 12px rgba(29,233,255,.25); text-shadow: 0 0 8px var(--cyan); }
-  a.game small { display: block; margin-top: 6px; font-weight: 400; font-size: 11px; color: var(--dim); text-shadow: none; }
-  a.game:hover, a.game:focus-visible { background: rgba(29,233,255,.08); outline: none; }
-</style>
+<title>Dead Baron — Neon Asteroids and other games</title>
+<meta name="description" content="Dead Baron makes small, fast browser games. Play Neon Asteroids: 1v1 neon dogfights on your phone or computer, free, no download.">
+<link rel="stylesheet" href="/site.css">
 </head>
 <body>
+<header><a class="brand" href="/">DEAD BARON</a><nav><a href="/" aria-current="page">HOME</a><a href="/guide/neon-asteroids/">GUIDE</a><a href="/about/">ABOUT</a><a href="/contact/">CONTACT</a></nav></header>
 <main>
-  <h1>DEAD BARON</h1>
-  <p>GAMES</p>
-  <a class="game" href="/neon-asteroids/">NEON ASTEROIDS<small>1v1 NEON DOGFIGHTS · PHONE OR COMPUTER</small></a>
+
+<h1>DEAD BARON</h1>
+<p class="lede">Small, fast games you can play in a browser — on your phone or your computer, free, with nothing to install.</p>
+
+<div class="card">
+  <h2>NEON ASTEROIDS</h2>
+  <p>A glowing, vector-style take on the classic rock-blasting arcade game, rebuilt as a one-on-one duel. Drift through a neon asteroid field, break rocks for points and try to outscore — or outgun — your rival in a best-of-three match. Every round lasts one minute, so a full match takes about five.</p>
+  <ul>
+    <li><strong>Online duels:</strong> host a private room and share a 4-letter code, or hit Quick Play to be matched with whoever else is searching.</li>
+    <li><strong>Practice:</strong> fly solo for a high score, or warm up against a bot.</li>
+    <li><strong>Plays anywhere:</strong> one-thumb touch controls on phones; keyboard or mouse on computers.</li>
+    <li><strong>16 hull colors</strong> and rainbow UFOs that crash the party in round three.</li>
+  </ul>
+  <p><a class="btn" href="/neon-asteroids/">PLAY NOW</a></p>
+  <p>New to it? Read the <a href="/guide/neon-asteroids/">how-to-play guide</a> for controls, rules and tips.</p>
+</div>
+
+<h2>ABOUT THE STUDIO</h2>
+<p>Dead Baron is a one-person game project. Games here are built to load instantly, run smoothly on ordinary phones and connect players directly to each other for low-lag multiplayer. <a href="/about/">More about Dead Baron →</a></p>
+
 </main>
+<footer><span>© 2026 Dead Baron</span><span><a href="/privacy/">Privacy policy</a> · <a href="/contact/">Contact</a></span></footer>
 </body>
 </html>
