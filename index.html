@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dead Baron — Neon Asteroids and other games</title>
+<title>Dead Baron — Neon Asteroids</title>
 <meta name="description" content="Dead Baron makes small, fast browser games. Play Neon Asteroids: 1v1 neon dogfights on your phone or computer, free, no download.">
 <link rel="stylesheet" href="/site.css">
 <script>
@@ -18,11 +18,20 @@
 <body>
 <header><a class="brand" href="/">DEAD BARON</a><nav><a href="/" aria-current="page">HOME</a><a href="/guide/neon-asteroids/">GUIDE</a><a href="/about/">ABOUT</a><a href="/contact/">CONTACT</a></nav></header>
 <main>
+<section class="hero">
+  <div class="trailer">
+    <video autoplay muted loop playsinline preload="auto" poster="/media/neon-asteroids-poster.jpg" aria-label="Neon Asteroids gameplay trailer">
+      <source src="/media/neon-asteroids-trailer.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="cta">
+    <a class="btn btn-play" href="/neon-asteroids/">PLAY NOW</a>
+    <button class="btn-ghost" type="button" aria-expanded="false" aria-controls="about-game" id="aboutToggle">ABOUT</button>
+  </div>
+  <p class="tagline">1v1 neon dogfights · free · phone or computer</p>
+</section>
 
-<h1>DEAD BARON</h1>
-<p class="lede">Small, fast games you can play in a browser — on your phone or your computer, free, with nothing to install.</p>
-
-<div class="card">
+<section id="about-game" class="about-panel" hidden>
   <h2>NEON ASTEROIDS</h2>
   <p>A glowing, vector-style take on the classic rock-blasting arcade game, rebuilt as a one-on-one duel. Drift through a neon asteroid field, break rocks for points and try to outscore — or outgun — your rival in a best-of-three match. Every round lasts one minute, so a full match takes about five.</p>
   <ul>
@@ -31,12 +40,20 @@
     <li><strong>Plays anywhere:</strong> one-thumb touch controls on phones; keyboard or mouse on computers.</li>
     <li><strong>16 hull colors</strong> and rainbow UFOs that crash the party in round three.</li>
   </ul>
-  <p><a class="btn" href="/neon-asteroids/">PLAY NOW</a></p>
   <p>New to it? Read the <a href="/guide/neon-asteroids/">how-to-play guide</a> for controls, rules and tips.</p>
-</div>
-
-<h2>ABOUT THE STUDIO</h2>
-<p>Dead Baron is a one-person game project. Games here are built to load instantly, run smoothly on ordinary phones and connect players directly to each other for low-lag multiplayer. <a href="/about/">More about Dead Baron →</a></p>
+  <h2>THE STUDIO</h2>
+  <p>Dead Baron is a one-person game project. Games here are built to load instantly, run smoothly on ordinary phones and connect players directly to each other for low-lag multiplayer. <a href="/about/">More about Dead Baron →</a></p>
+</section>
+<script>
+  (function () {
+    var btn = document.getElementById('aboutToggle'), panel = document.getElementById('about-game');
+    btn.addEventListener('click', function () {
+      var open = panel.hidden; panel.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'CLOSE' : 'ABOUT';
+      if (open) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  })();
+</script>
 
 </main>
 <footer><span>© 2026 Dead Baron</span><span><a href="/privacy/">Privacy policy</a> · <a href="/contact/">Contact</a></span></footer>
