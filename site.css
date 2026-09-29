@@ -49,3 +49,7 @@ footer a { color: var(--dim); }
 .about-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 20px 16px; margin: 26px auto 0; max-width: 720px; scroll-margin-top: 16px; }
 .about-panel[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .trailer video { display: none; } .trailer { background: #05020f url(/media/neon-asteroids-poster.jpg) center / cover no-repeat; } }
+.game-title { margin: 8px 0 0; text-align: center; font-size: clamp(30px, 8.5vw, 56px); letter-spacing: 6px; line-height: 1.1; color: #fff; }
+.game-title .t-neon { text-shadow: 0 0 8px #FF3D91, 0 0 22px #FF3D91, 0 0 44px rgba(255,61,145,.6); }
+.game-title .t-ast  { text-shadow: 0 0 8px #1DE9FF, 0 0 22px #1DE9FF, 0 0 44px rgba(29,233,255,.6); }
+.hero { gap: 18px; }
