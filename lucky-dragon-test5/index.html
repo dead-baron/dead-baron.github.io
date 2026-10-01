@@ -1264,13 +1264,14 @@ const Dragon = (() => {
     cute: { asset: 'f_cute', ax: .5, ay: .6032, ruff: .725, aspect: .7871 }
   };
   const WATER_ART_Y = 300;
-  const SIDE_DX = .53;              // left home → right home shift (fraction of width)           // leap-skin art row that sits on the waterline at home
+  const SIDE_DX = .53;
+  const SPLASHY = /^(idlePlay|idleHop|idleFly|idleShimmy|idleStretch|symbolWinHop|symbolWinCheer|tier1Run|tier2|wild|fsTrigger|diveDown|swimUp|swimAcross)/;              // left home → right home shift (fraction of width)           // leap-skin art row that sits on the waterline at home
 
   /* ---------- GL state ---------- */
   let cv, gl, prog, U = {}, ok = false, quadVbo, quadIbo, lidVbo;
   let W = 1, H = 1, dpr = 1, waterY = 0, freeWater = false;
   const loop = { name: 'idle', prev: 'idle', blend: 1 };
-  let side = 0, travel = null, wet = null, splashCD = 0, rippleCD = 0;
+  let side = 0, travel = null, wet = null, wetRig = null, diveEl = null, splashCD = 0, rippleCD = 0;
   let action = null, lastAction = 0, nextIdleVar = 8, blinkAt = 2, glowKey = '', zKey = -1, prevHeadY = null, lastT = 0;
   const rigW = { leap: 1, dance: 0, swim: 0, run: 0, look: 0, fly: 0, sway: 0, fly2: 0, step: 0, leap2: 0, proud: 0 }, faceW = { sly: 0, excited: 0, smug: 0, cute: 0 };
   let curRig = 'leap';
@@ -1802,7 +1803,13 @@ const Dragon = (() => {
        where the body passes through the water, small ripples ring out from time to time. */
     const chain = RIGS[curRig].chainOut;
     splashCD -= dt; rippleCD -= dt;
-    if (chain && !freeWater && !(o.z && o.am > .3)) {
+    /* Only big, exaggerated moves interact with the water — never plain idling/watching, never while the
+       transition curtain is up, and never on the frame a pose swap teleports the body points. */
+    const splashy = action && SPLASHY.test(action.name) && (t - action.t0) > .12;
+    const curtain = (diveEl || (diveEl = document.getElementById('dive'))).classList.contains('on');
+    const settled = rigW[curRig] > .98;
+    if (curRig !== wetRig) { wet = null; wetRig = curRig; }
+    if (chain && splashy && settled && !curtain && !freeWater && !(o.z && o.am > .3)) {
       const wy = x => waterY + Scene.wave(x, t);
       const now = chain.map(q => q[1] > wy(q[0]));
       if (wet && wet.pts.length === chain.length) {
