@@ -1165,10 +1165,11 @@ const Dragon = (() => {
         force('B1', box(x, y, 300, 420, 470, 700, 26) * .85);
         force('B3', box(x, y, 92, 178, 352, 482, 16) * .85);
       },
-      faceAt: [478, 158], faceRuff: 158
+      faceAt: [505, 166], faceRuff: 240,
+      headMask: (x, y) => Math.max(ss(1.12, .86, Math.hypot((x - 478) / 118, (y - 118) / 112)), box(x, y, 512, 720, 160, 380, 10), box(x, y, 236, 342, 140, 192, 8))
     },
     dance: {
-      asset: 'd_dance', w: 640, h: 644, cell: 11, sigma: 46, headW: 120, pivot: [330, 405], headC: [440, 125],
+      asset: 'd_dance', w: 640, h: 644, cell: 11, sigma: 46, headW: 185, pivot: [330, 405], headC: [440, 125],
       joints: { chest: [425, 410], neckMid: [395, 300], neckTop: [400, 200], headEnd: [505, 105], b1: [310, 420], b2: [200, 415], b3: [95, 405], t1: [55, 330], t2: [110, 250], t3: [170, 180], t4: [150, 110], t5: [70, 100] },
       eyes: [],
       paint(x, y, force) {
@@ -1201,7 +1202,7 @@ const Dragon = (() => {
     look:  POSE('d_look', 620, 190, [360, 140], [270, 380], [[380, 350], [350, 280], [340, 210], [430, 130], [300, 400], [200, 420], [110, 470], [40, 400], [60, 300], [150, 220], [170, 150], [100, 80]]),
     fly:   POSE('d_fly', 608, 185, [340, 130], [230, 350], [[370, 320], [330, 260], [300, 200], [410, 130], [280, 330], [160, 320], [60, 350], [70, 440], [110, 530], [180, 570], [240, 530], [290, 495]]),
     sway:  POSE('d_sway', 900, 230, [270, 160], [300, 500], [[150, 420], [200, 330], [240, 270], [360, 170], [230, 470], [340, 450], [430, 520], [440, 620], [400, 720], [320, 780], [230, 800], [170, 840]]),
-    fly2:  POSE('d_fly2', 629, 245, [450, 120], [300, 360], [[470, 330], [430, 270], [400, 200], [550, 115], [400, 350], [290, 340], [180, 320], [90, 360], [60, 430], [110, 520], [190, 580], [300, 600]]),
+    fly2:  POSE('d_fly2', 629, 225, [450, 120], [300, 360], [[470, 330], [430, 270], [400, 200], [550, 115], [400, 350], [290, 340], [180, 320], [90, 360], [60, 430], [110, 520], [190, 580], [300, 600]]),
     step:  POSE('d_step', 578, 150, [350, 110], [280, 360], [[360, 360], [350, 260], [340, 180], [410, 120], [300, 430], [230, 360], [170, 300], [140, 230], [140, 160], [110, 100], [70, 80], [30, 110]]),
     leap2: POSE('d_leap2', 508, 200, [420, 120], [280, 320], [[420, 340], [400, 270], [390, 200], [480, 120], [330, 380], [240, 300], [140, 230], [60, 260], [40, 330], [70, 400], [130, 430], [200, 450]]),
     proud: POSE('d_proud', 601, 160, [350, 100], [270, 400], [[360, 360], [340, 270], [330, 180], [400, 90], [290, 400], [190, 420], [110, 420], [50, 350], [60, 260], [110, 180], [130, 120], [60, 110]])
@@ -1261,7 +1262,7 @@ const Dragon = (() => {
       r.paint(x, y, force);
       const s = w.reduce((a, b) => a + b, 0);
       for (let i = 0; i < NB; i++) wVal[k * NB + i] = w[i] / s;
-      hide[k] = ss(.4, .8, wVal[k * NB + BI.H]);          // painted head masked while an expression head is on
+      hide[k] = r.headMask ? r.headMask(x, y) : 0;          // painted head masked while an expression head is on
     }
     const indices = new Uint16Array(idx);
     const vbo = gl.createBuffer(), ibo = gl.createBuffer();
@@ -1597,6 +1598,13 @@ const Dragon = (() => {
     }
     return base;
   }
+  /* Scale lock: the dragon never grows/shrinks between animations. Only a ±3% breath/squash
+     survives; mirror flips (sx = -1) keep their sign but never pass through a squashed sliver. */
+  function lockScale(o) {
+    o.s = clamp(o.s, .985, 1.015);
+    o.sx = (o.sx < 0 ? -1 : 1) * clamp(Math.abs(o.sx), .97, 1.03);
+    o.sy = clamp(o.sy, .97, 1.03);
+  }
   function idleScheduler(t) {
     if (action || loop.name !== 'idle' || Store.state.phase !== 'idle' || Store.state.mode !== 'base') { nextIdleVar = Math.max(nextIdleVar, t + 6); return; }
     if (t > nextIdleVar && t - lastAction > 5) { play('idleVar'); nextIdleVar = t + 8 + RNG.next() * 7; }
@@ -1617,7 +1625,7 @@ const Dragon = (() => {
       const d = ang - b.ang, c = Math.cos(d), s = Math.sin(d), m = r.mats[i];
       m[0] = c; m[1] = s; m[2] = -s; m[3] = c; m[4] = start[0] - (c * b.s[0] - s * b.s[1]); m[5] = start[1] - (s * b.s[0] + c * b.s[1]);
     }
-    const turnK = 1 - .38 * o.turn, hc = r.headC, Hm = r.mats[BI.H];
+    const turnK = 1 - .12 * Math.min(1, o.turn), hc = r.headC, Hm = r.mats[BI.H];
     r.rigid = (x, y) => G(Hm[0] * x + Hm[2] * y + Hm[4], Hm[1] * x + Hm[3] * y + Hm[5]);
     const out = r.out, wv = r.wVal;
     for (let v = 0; v < r.n; v++) {
@@ -1643,6 +1651,7 @@ const Dragon = (() => {
     const dt = Math.min(.05, Math.max(0, t - lastT)); lastT = t;
     idleScheduler(t);
     const o = computePose(t);
+    lockScale(o);
     /* skin / attachment crossfades */
     const target = RIGS[o.rig] && !RIGS[o.rig].missing ? o.rig : 'leap';
     if (target !== curRig) { if (target === 'dance') FX.sparks(W * .3, H * .2, 50, '#fff3a0'); curRig = target; }
@@ -1692,7 +1701,7 @@ const Dragon = (() => {
         for (const fk in FACES) {
           const f = FACES[fk], fw = faceW[fk]; if (fw < .01 || !f.tex) continue;
           const wArt = r.faceRuff / f.ruff, hArt = wArt * f.aspect, x0 = r.faceAt[0] - f.ax * wArt, y0 = r.faceAt[1] - f.ay * hArt;
-          const turnK = 1 - .2 * o.turn, cx = r.faceAt[0];
+          const turnK = 1, cx = r.faceAt[0];
           const buf = new Float32Array(20);
           [[x0, y0, 0, 0], [x0 + wArt, y0, 1, 0], [x0, y0 + hArt, 0, 1], [x0 + wArt, y0 + hArt, 1, 1]]
             .forEach(([x, y, u, v], i) => { const q = r.rigid(cx + (x - cx) * turnK, y); buf.set([q[0], q[1], u, v, 0], i * 5); });
