@@ -1207,7 +1207,10 @@ const Dragon = (() => {
     leap2: POSE('d_leap2', 508, 200, [420, 120], [280, 320], [[420, 340], [400, 270], [390, 200], [480, 120], [330, 380], [240, 300], [140, 230], [60, 260], [40, 330], [70, 400], [130, 430], [200, 450]]),
     proud: POSE('d_proud', 601, 160, [350, 100], [270, 400], [[360, 360], [340, 270], [330, 180], [400, 90], [290, 400], [190, 420], [110, 420], [50, 350], [60, 260], [110, 180], [130, 120], [60, 110]])
   });
-  for (const k in RIGS) RIGS[k].scale = RIGS.leap.headW / RIGS[k].headW;   // every skin & face keeps the same head size
+  /* Whole-dragon size match: each skin is scaled so its total painted area equals the idle (leap) pose's,
+     measured from the artwork's alpha at build time. Keeps the dragon's overall size identical across poses. */
+  const BODY_SCALE = {"leap": 1.0, "dance": 0.923, "swim": 1.347, "run": 1.069, "look": 1.0, "fly": 1.204, "sway": 0.961, "fly2": 1.057, "step": 1.173, "leap2": 1.168, "proud": 1.105};
+  for (const k in RIGS) RIGS[k].scale = BODY_SCALE[k] || 1;
   /* Expression head attachments: anchor = nose (normalised), ruff = face-fur width fraction */
   const FACES = {
     sly: { asset: 'f_sly', ax: .45, ay: .629, ruff: .725, aspect: .7754 },
