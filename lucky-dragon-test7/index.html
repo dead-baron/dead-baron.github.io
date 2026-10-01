@@ -1429,7 +1429,7 @@ const Dragon = (() => {
     return true;
   }
   async function init() {
-    const keys = [...new Set([...Object.values(RIGS).map(r => r.asset), ...Object.values(FACES).map(f => f.asset)])];
+    const keys = [...new Set([...Object.values(RIGS).map(r => r.asset), ...Object.values(FACES).map(f => f.asset)])].filter(k => ASSET_DATA[k]);
     const imgs = {};
     (await Promise.all(keys.map(k => Assets.image(k)))).forEach((im, i) => imgs[keys[i]] = im);
     if (!imgs.mascot) return;
