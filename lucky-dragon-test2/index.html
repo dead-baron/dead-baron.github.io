@@ -692,16 +692,9 @@ const ASSET_DATA = {"bg_base": "data:image/webp;base64,UklGRuzcAABXRUJQVlA4IODcA
 const Assets = (() => {
   const urls = {};
   function init() {
-    // Convert data URIs to short blob URLs so DOM churn never copies the payload
-    for (const k in ASSET_DATA) {
-      try {
-        const [head, b64] = ASSET_DATA[k].split(',');
-        const mime = head.slice(5, head.indexOf(';'));
-        const bin = atob(b64), u8 = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-        urls[k] = URL.createObjectURL(new Blob([u8], { type: mime }));
-      } catch (e) { urls[k] = ASSET_DATA[k]; }
-    }
+    // Data URIs are used directly (blob: URLs are blocked in some browsers/embedded views).
+    // Each image is referenced once — symbols through one stylesheet rule each — so the payload is never re-copied.
+    for (const k in ASSET_DATA) urls[k] = ASSET_DATA[k];
     const css = Object.keys(SYMBOLS).map(id => `.sym-${id}{background-image:url("${urls['sym_' + id]}")}`).join('\n')
       + `\n#desk .desk-base{background-image:url("${urls.bg_desk}")}\n#desk .desk-free{background-image:url("${urls.bg_free}")}`;
     const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
