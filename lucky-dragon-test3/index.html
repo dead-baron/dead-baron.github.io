@@ -1037,12 +1037,12 @@ const Dragon = (() => {
   const PIVOT = [330, 380], HEAD_C = [492, 142];
   const EYES = [{ c: [475, 138], rx: 12.5, ry: 14.5, rot: -.25 }, { c: [529, 133], rx: 8.5, ry: 12.5, rot: -.1 }];
   const LID = [232 / 255, 238 / 255, 230 / 255, 1];
-  const LIDW_I = [BI.H, 0, 0], LIDW_V = [1, 0, 0];
+  const LIDW = Array.from({ length: NB }, (_, i) => i === BI.H ? 1 : 0);
 
   /* ---------- State ---------- */
   let cv, gl, prog, U = {}, vbo, ibo, lidVbo, tex, ok = false, imgEl = null;
   let W = 1, H = 1, dpr = 1, waterY = 0, freeWater = false;
-  let bindPos, uvs, wIdx, wVal, indices, outBuf, vCount = 0;
+  let bindPos, uvs, wVal, indices, outBuf, vCount = 0;
   const loop = { name: 'idle', prev: 'idle', blend: 1, t0: 0 };
   let action = null, lastAction = 0, nextIdleVar = 8, blinkAt = 2, glowKey = '', zKey = -1, prevHeadY = null;
   const mats = Array.from({ length: NB }, () => new Float32Array(6));
@@ -1071,25 +1071,25 @@ const Dragon = (() => {
     }
     indices = new Uint16Array(idx);
     /* Skin weights: Gaussian falloff from each bone segment, top-3, with painted overrides */
-    wIdx = new Uint8Array(vCount * 3); wVal = new Float32Array(vCount * 3);
+    wVal = new Float32Array(vCount * NB);
     const segDist = (px, py, b) => {
       const [ax, ay] = b.s, [bx, by] = b.e, dx = bx - ax, dy = by - ay;
       const t = clamp(((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy), 0, 1);
       return Math.hypot(px - ax - dx * t, py - ay - dy * t);
     };
-    const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+    const ss = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+    // feathered box mask: 1 inside, smooth falloff over `f` px — no hard seams anywhere in the mesh
+    const box = (x, y, x0, x1, y0, y1, f) => ss(x0 - f, x0 + f, x) * ss(x1 + f, x1 - f, x) * ss(y0 - f, y0 + f, y) * ss(y1 + f, y1 - f, y);
     for (let k = 0; k < vCount; k++) {
       const x = bindPos[k * 2], y = bindPos[k * 2 + 1];
-      const w = bind.map(b => Math.exp(-Math.pow(segDist(x, y, b) / 40, 2)) + 1e-6);
-      const force = (bone, f) => { if (f <= 0) return; const s = w.reduce((a, b) => a + b, 0); for (let i = 0; i < NB; i++) w[i] = w[i] / s * (1 - f); w[BI[bone]] += f; };
-      if (x >= 505 && y >= 150 && y <= 390) force('H', 1);                       // right whisker
-      else if (x >= 228 && x <= 350 && y >= 135 && y <= 198) force('H', 1);       // left whisker
-      else if (x >= 350) force('H', smooth(222, 188, y));                          // head + mane
-      if (x >= 300 && x <= 432) force('B1', smooth(445, 472, y));                 // front legs
-      if (x >= 82 && x <= 188) force('B3', smooth(340, 365, y) * smooth(492, 470, y)); // hind leg
-      const order = w.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]).slice(0, 3);
-      const s = order.reduce((a, o) => a + o[0], 0);
-      order.forEach((o, n) => { wIdx[k * 3 + n] = o[1]; wVal[k * 3 + n] = o[0] / s; });
+      const w = bind.map(b => Math.exp(-Math.pow(segDist(x, y, b) / 46, 2)) + 1e-6);
+      const force = (bone, f) => { if (f <= 1e-3) return; const s = w.reduce((a, b) => a + b, 0); for (let i = 0; i < NB; i++) w[i] = w[i] / s * (1 - f); w[BI[bone]] += f; };
+      force('H', Math.max(box(x, y, 512, 720, 160, 380, 14), box(x, y, 236, 342, 140, 192, 10)));  // whiskers ride the head
+      force('H', ss(330, 380, x) * ss(226, 186, y));                                                // head + mane
+      force('B1', box(x, y, 300, 420, 470, 700, 26) * .85);                                         // front legs follow the torso
+      force('B3', box(x, y, 92, 178, 352, 482, 16) * .85);                                          // hind leg follows the hips
+      const s = w.reduce((a, b) => a + b, 0);
+      for (let i = 0; i < NB; i++) wVal[k * NB + i] = w[i] / s;
     }
     outBuf = new Float32Array(vCount * 4);
   }
@@ -1160,12 +1160,12 @@ const Dragon = (() => {
   const P = () => ({ x: 0, y: 0, ax: .5, ay: .2, am: 0, r: 0, s: 1, sx: 1, sy: 1, turn: 0, blink: 0, glow: 0, glowColor: '255,214,90', rim: .35, rimColor: [.75, 1, .95], sheen: -5, bright: 1, fade: null, tint: null, deep: null, z: 0, rot: new Float32Array(NB) });
   const bump = (p, a, b) => (p <= a || p >= b) ? 0 : Math.sin(Math.PI * (p - a) / (b - a));
   const ramp = (p, a, b) => { const t = clamp((p - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
-  function wave(o, t, speed, amp, phase = .75, base = [.02, .03, .045, .06, .08, .1, .12, .14]) {
+  function wave(o, t, speed, amp, phase = .75, base = [.008, .025, .045, .06, .08, .1, .12, .14]) {
     TAIL.forEach((bi, i) => o.rot[bi] += base[i] * amp * Math.sin(t * speed - i * phase));
   }
   function neck(o, t, k = 1) {
-    o.rot[BI.N1] += .02 * k * Math.sin(t * 1.6 + 1);
-    o.rot[BI.N2] += .03 * k * Math.sin(t * 1.6 + .5);
+    o.rot[BI.N1] += .008 * k * Math.sin(t * 1.6 + 1);
+    o.rot[BI.N2] += .022 * k * Math.sin(t * 1.6 + .5);
     o.rot[BI.H] += (-.04 * Math.sin(t * 1.6) + .03 * Math.sin(t * .7)) * k;
   }
 
@@ -1178,8 +1178,8 @@ const Dragon = (() => {
     },
     watch(t) {                                  // 3. Observing / anticipation during reel spin
       const o = P(); wave(o, t, 3.2, .7); neck(o, t, .5);
-      o.r = .07 + .01 * Math.sin(t * 3); o.x = .018; o.y = .008;
-      o.rot[BI.N2] += .1; o.rot[BI.H] += .16 + .03 * Math.sin(t * 2.5);
+      o.r = .05 + .01 * Math.sin(t * 3); o.x = .015; o.y = .006;
+      o.rot[BI.N2] += .035; o.rot[BI.H] += .09 + .025 * Math.sin(t * 2.5);
       o.fade = 1; o.tint = .6; o.deep = 0; return o;
     },
     fsIdle(t) {                                 // 12. Free-spin idle: slow deep-ocean swim, bioluminescent rim
@@ -1189,18 +1189,18 @@ const Dragon = (() => {
       o.fade = 0; o.tint = .4; o.deep = 1; return o;
     }
   };
-  LOOPS.fsWatch = t => { const o = LOOPS.fsIdle(t); o.rot[BI.H] += .14; o.r += .05; wave(o, t, 3, .4); return o; };
+  LOOPS.fsWatch = t => { const o = LOOPS.fsIdle(t); o.rot[BI.H] += .08; o.r += .05; wave(o, t, 3, .4); return o; };
 
   /* ---------- One-shot clips (p = 0..1) ---------- */
   const CLIPS = {
     idleCurious: { dur: 2.4, f(p, t) {           // 2a. Idle variation: curious head tilt + 2.5D look at camera + double blink
       const o = LOOPS.idle(t), k = bump(p, .05, .95);
-      o.rot[BI.H] += -.28 * k * (p < .5 ? 1 : 1 - (p - .5) * 1.4); o.rot[BI.N2] += -.08 * k;
+      o.rot[BI.H] += -.24 * k * (p < .5 ? 1 : 1 - (p - .5) * 1.4); o.rot[BI.N2] += -.04 * k;
       o.turn = .55 * bump(p, .2, .8); o.blink = Math.max(bump(p, .42, .48), bump(p, .52, .58)); o.r += -.03 * k; return o; } },
     idleStretch: { dur: 2.6, f(p, t) {           // 2b. Idle variation: stretch, mane shake, tail flick
       const o = LOOPS.idle(t), st = bump(p, 0, .45), sh = bump(p, .45, .8);
       o.sy += .07 * st; o.sx -= .03 * st; o.y -= .02 * st; o.rot[BI.H] -= .22 * st; o.blink = st > .6 ? 1 : 0;
-      o.rot[BI.H] += .12 * sh * Math.sin(p * 90); o.rot[BI.N2] += .06 * sh * Math.sin(p * 90 + 1);
+      o.rot[BI.H] += .1 * sh * Math.sin(p * 90); o.rot[BI.N2] += .03 * sh * Math.sin(p * 90 + 1);
       wave(o, t, 9, 2.2 * bump(p, .7, 1)); return o; } },
     idlePlay: { dur: 2.8, f(p, t) {              // 2c. Idle variation: playful hop & barrel roll with sheen
       const o = LOOPS.idle(t), hop = bump(p, .1, .7);
@@ -1213,12 +1213,12 @@ const Dragon = (() => {
       o.glow = .5 * k; o.glowColor = '255,214,90'; o.rim = .35 + .6 * k; o.rimColor = [1, .9, .5]; return o; } },
     symbolWin: { dur: 1.1, f(p, t) {             // 4. Symbol (line) win: double nod toward the reels, tail flick, happy squint
       const o = LOOPS.idle(t), n = Math.max(bump(p, .05, .4), bump(p, .4, .75));
-      o.rot[BI.H] += .22 * n; o.rot[BI.N2] += .06 * n; o.r += .04 * n; o.blink = .55 * bump(p, 0, 1);
+      o.rot[BI.H] += .15 * n; o.rot[BI.N2] += .03 * n; o.r += .04 * n; o.blink = .55 * bump(p, 0, 1);
       wave(o, t, 8, 1.6 * bump(p, .2, 1)); return o; } },
     fsTrigger: { dur: 2.6, f(p, t) {             // 5. Free-spin trigger: rear up, 360° spin, roar pose, gold burst
       const o = LOOPS.idle(t), up = bump(p, 0, .95), spin = ramp(p, .22, .66);
       o.y -= .06 * up; o.s += .18 * up; o.r += -.25 * bump(p, 0, .25) + TAU * spin;
-      o.rot[BI.H] -= .35 * bump(p, .66, 1); o.rot[BI.N2] -= .15 * bump(p, .66, 1); o.rot[BI.N1] -= .08 * up;
+      o.rot[BI.H] -= .3 * bump(p, .66, 1); o.rot[BI.N2] -= .08 * bump(p, .66, 1); o.rot[BI.N1] -= .025 * up;
       wave(o, t, 10, 2.4 * up); o.sheen = -.3 + 1.8 * ramp(p, .5, .95);
       o.glow = .9 * up; o.glowColor = '255,214,90'; o.rim = .35 + .8 * up; o.rimColor = [1, .9, .45]; o.bright = 1 + .15 * up; o.z = 1; o.fade = 0; o.tint = 0; return o; } },
     wild: { dur: 1.7, f(p, t) {                  // 6. Wild trigger: rear back, swoop toward reel 2 with a cyan glow
@@ -1329,11 +1329,11 @@ const Dragon = (() => {
     const gs = k * o.s, gsx = gs * o.sx, gsy = gs * o.sy, gc = Math.cos(o.r), gn = Math.sin(o.r);
     const G = (x, y) => { const vx = (x - PIVOT[0]) * gsx, vy = (y - PIVOT[1]) * gsy; return [px + gc * vx - gn * vy, py + gn * vx + gc * vy]; };
     const turnK = 1 - .38 * o.turn;
-    const skin = (x, y, k3, wi, wv) => {
+    const skin = (x, y, off, wv) => {
       let sx = 0, sy = 0;
-      for (let n = 0; n < 3; n++) {
-        const w = wv[k3 + n]; if (w < 1e-4) continue;
-        const bi = wi[k3 + n], m = mats[bi];
+      for (let bi = 0; bi < NB; bi++) {
+        const w = wv[off + bi]; if (w < 1e-4) continue;
+        const m = mats[bi];
         let bx = x, by = y;
         if (bi === BI.H) bx = HEAD_C[0] + (x - HEAD_C[0]) * turnK;
         sx += w * (m[0] * bx + m[2] * by + m[4]); sy += w * (m[1] * bx + m[3] * by + m[5]);
@@ -1341,7 +1341,7 @@ const Dragon = (() => {
       return G(sx, sy);
     };
     for (let v = 0; v < vCount; v++) {
-      const q = skin(bindPos[v * 2], bindPos[v * 2 + 1], v * 3, wIdx, wVal);
+      const q = skin(bindPos[v * 2], bindPos[v * 2 + 1], v * NB, wVal);
       outBuf[v * 4] = q[0]; outBuf[v * 4 + 1] = q[1]; outBuf[v * 4 + 2] = uvs[v * 2]; outBuf[v * 4 + 3] = uvs[v * 2 + 1];
     }
     /* splash when the head crosses the waterline (base scene only) */
@@ -1373,10 +1373,10 @@ const Dragon = (() => {
       EYES.forEach(e => {
         const ry = e.ry * o.blink, cy = -e.ry + ry, cr = Math.cos(e.rot), sr = Math.sin(e.rot), N = 18;
         const at = (a) => { const lx = Math.cos(a) * e.rx * 1.08, ly = cy + Math.sin(a) * ry * 1.04; return [e.c[0] + cr * lx - sr * ly, e.c[1] + sr * lx + cr * ly]; };
-        const c0 = skin(e.c[0] - sr * cy, e.c[1] + cr * cy, 0, LIDW_I, LIDW_V);
+        const c0 = skin(e.c[0] - sr * cy, e.c[1] + cr * cy, 0, LIDW);
         for (let i = 0; i < N; i++) {
           const a0 = i / N * TAU, a1 = (i + 1) / N * TAU;
-          const p0 = skin(...at(a0), 0, LIDW_I, LIDW_V), p1 = skin(...at(a1), 0, LIDW_I, LIDW_V);
+          const p0 = skin(...at(a0), 0, LIDW), p1 = skin(...at(a1), 0, LIDW);
           pts.push(c0[0], c0[1], 0, 0, p0[0], p0[1], 0, 0, p1[0], p1[1], 0, 0);
         }
       });
