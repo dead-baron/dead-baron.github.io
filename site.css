@@ -53,3 +53,12 @@ footer a { color: var(--dim); }
 .game-title .t-neon { text-shadow: 0 0 8px #FF3D91, 0 0 22px #FF3D91, 0 0 44px rgba(255,61,145,.6); }
 .game-title .t-ast  { text-shadow: 0 0 8px #1DE9FF, 0 0 22px #1DE9FF, 0 0 44px rgba(29,233,255,.6); }
 .hero { gap: 18px; }
+
+/* ---- City Life Auto first, Neon Asteroids after ---- */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.trailer-wide { aspect-ratio: 16 / 9; box-shadow: 0 0 40px rgba(255,70,90,.22), 0 0 80px rgba(255,190,60,.10); }
+.cla-title { color: #fff6e6; text-shadow: 0 0 8px #ff465a, 0 0 22px #ff465a, 0 0 44px rgba(255,190,60,.5); }
+.btn-cla { border-color: #ffbe3c; color: #ffbe3c; box-shadow: 0 0 12px rgba(255,190,60,.45), inset 0 0 12px rgba(255,190,60,.2); }
+.btn-cla:hover, .btn-cla:focus-visible { background: rgba(255,190,60,.08); }
+.hero-next { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--line); }
+@media (prefers-reduced-motion: reduce) { .trailer-wide { background: #05020f url(/media/city-life-auto-poster.jpg) center / cover no-repeat; } }

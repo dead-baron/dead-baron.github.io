@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dead Baron — Neon Asteroids</title>
-<meta name="description" content="Dead Baron makes small, fast browser games. Play Neon Asteroids: 1v1 neon dogfights on your phone or computer, free, no download.">
+<title>Dead Baron — City Life Auto, Neon Asteroids</title>
+<meta name="description" content="Dead Baron makes free browser games built for players. Play City Life Auto, a top-down crime game with a whole life sim on top for up to 100 players, and Neon Asteroids, 1v1 neon dogfights. Phone or computer, no download.">
 <meta property="og:site_name" content="Dead Baron">
-<meta property="og:title" content="Dead Baron — Neon Asteroids">
-<meta property="og:description" content="Dead Baron makes small, fast browser games. Play Neon Asteroids: 1v1 neon dogfights on your phone or computer, free, no download.">
+<meta property="og:title" content="Dead Baron — City Life Auto, Neon Asteroids">
+<meta property="og:description" content="Dead Baron makes free browser games built for players. Play City Life Auto, a top-down crime game with a whole life sim on top for up to 100 players, and Neon Asteroids, 1v1 neon dogfights. Phone or computer, no download.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://deadbaron.com/">
 <meta property="og:image" content="https://deadbaron.com/media/og-image.jpg">
@@ -28,7 +28,34 @@
 <header><a class="brand" href="/">DEAD BARON</a><nav><a href="/" aria-current="page">HOME</a><a href="/guide/neon-asteroids/">GUIDE</a><a href="/about/">ABOUT</a><a href="/contact/">CONTACT</a></nav></header>
 <main>
 <section class="hero">
-  <h1 class="game-title"><span class="t-neon">NEON</span> <span class="t-ast">ASTEROIDS</span></h1>
+  <h1 class="sr-only">Dead Baron games</h1>
+  <h2 class="sr-only">City Life Auto</h2>
+  <div class="trailer trailer-wide">
+    <video autoplay muted loop playsinline preload="auto" poster="/media/city-life-auto-poster.jpg" aria-label="The City Life Auto neon sign over the city at night">
+      <source src="/media/city-life-auto-trailer.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="cta">
+    <a class="btn btn-play btn-cla" href="https://play.deadbaron.com/">PLAY NOW</a>
+    <button class="btn-ghost" type="button" aria-expanded="false" aria-controls="about-cla" data-about>ABOUT</button>
+  </div>
+  <p class="tagline">top-down crime + a whole life · 100 players · free</p>
+</section>
+
+<section id="about-cla" class="about-panel" hidden>
+  <h2>CITY LIFE AUTO</h2>
+  <p>A classic top-down crime-spree game with a whole life sim layered on top, free in your browser, with up to 100 people in one city. You don't have to fight the police; you can join them.</p>
+  <ul>
+    <li><strong>Live any life:</strong> work jobs, drive a taxi, fish and hunt, join a crew, gamble at the casinos, shoot pool at a biker bar or play chess in the park.</li>
+    <li><strong>Own it:</strong> work on a farm or buy the whole farm, get a home of your own.</li>
+    <li><strong>Have fun with friends:</strong> surf, win skateboard contests, or steal shopping carts and crash them into each other.</li>
+    <li><strong>No wrong way to play:</strong> a huge world to explore, and you can change direction whenever you like. Free, with no pay-to-win.</li>
+  </ul>
+  <p><a href="https://play.deadbaron.com/">Play City Life Auto free →</a></p>
+</section>
+
+<section class="hero hero-next">
+  <h2 class="game-title"><span class="t-neon">NEON</span> <span class="t-ast">ASTEROIDS</span></h2>
   <div class="trailer">
     <video autoplay muted loop playsinline preload="auto" poster="/media/neon-asteroids-poster.jpg" aria-label="Neon Asteroids gameplay trailer">
       <source src="/media/neon-asteroids-trailer.mp4" type="video/mp4">
@@ -36,7 +63,7 @@
   </div>
   <div class="cta">
     <a class="btn btn-play" href="/neon-asteroids/">PLAY NOW</a>
-    <button class="btn-ghost" type="button" aria-expanded="false" aria-controls="about-game" id="aboutToggle">ABOUT</button>
+    <button class="btn-ghost" type="button" aria-expanded="false" aria-controls="about-game" data-about>ABOUT</button>
   </div>
   <p class="tagline">1v1 neon dogfights · free · phone or computer</p>
 </section>
@@ -52,17 +79,17 @@
   </ul>
   <p>New to it? Read the <a href="/guide/neon-asteroids/">how-to-play guide</a> for controls, rules and tips.</p>
   <h2>THE STUDIO</h2>
-  <p>Dead Baron is a one-person game project. Games here are built to load instantly, run smoothly on ordinary phones and connect players directly to each other for low-lag multiplayer. <a href="/about/">More about Dead Baron →</a></p>
+  <p>Dead Baron is a one-person game studio, making games people will really love. Games here are built to load instantly, run smoothly on ordinary phones and connect players directly to each other for low-lag multiplayer. <a href="/about/">More about Dead Baron →</a></p>
 </section>
 <script>
-  (function () {
-    var btn = document.getElementById('aboutToggle'), panel = document.getElementById('about-game');
+  document.querySelectorAll('[data-about]').forEach(function (btn) {
+    var panel = document.getElementById(btn.getAttribute('aria-controls'));
     btn.addEventListener('click', function () {
       var open = panel.hidden; panel.hidden = !open;
       btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'CLOSE' : 'ABOUT';
       if (open) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  })();
+  });
 </script>
 
 </main>
